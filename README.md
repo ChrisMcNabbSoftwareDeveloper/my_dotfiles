@@ -6,7 +6,8 @@
     (_______\_____|\____|_|
 
     # Yet Another Dotfile Repo v1.1
-    # Now with Prezto and Vundle!
+    # zsh and anything else having to do with zsh has been removed.
+    # there are other mods, as well. 
 
     sh -c "`curl -fsSL https://raw.github.com/skwp/dotfiles/master/install.sh`"
 
