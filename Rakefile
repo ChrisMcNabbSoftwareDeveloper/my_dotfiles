@@ -19,13 +19,10 @@ task :install => [:submodule_init, :submodules] do
   file_operation(Dir.glob('ruby/*')) if want_to_install?('rubygems config (faster/no docs)')
   file_operation(Dir.glob('ctags/*')) if want_to_install?('ctags config (better js/ruby support)')
   file_operation(Dir.glob('tmux/*')) if want_to_install?('tmux config')
-  file_operation(Dir.glob('vimify/*')) if want_to_install?('vimification of command line tools')
   if want_to_install?('vim configuration (highly recommended)')
     file_operation(Dir.glob('{vim,vimrc}'))
     Rake::Task["install_vundle"].execute
   end
-
-  Rake::Task["install_prezto"].execute
 
   install_fonts if RUBY_PLATFORM.downcase.include?("darwin")
 
@@ -36,17 +33,9 @@ task :install => [:submodule_init, :submodules] do
   success_msg("installed")
 end
 
-task :install_prezto do
-  if want_to_install?('zsh enhancements & prezto')
-    install_prezto
-  end
-end
-
 task :update do
   Rake::Task["vundle_migration"].execute if needs_migration_to_vundle?
   Rake::Task["install"].execute
-  #TODO: for now, we do the same as install. But it would be nice
-  #not to clobber zsh files
 end
 
 task :submodule_init do
@@ -171,8 +160,7 @@ def install_homebrew
   puts "======================================================"
   puts "Installing Homebrew packages...There may be some warnings."
   puts "======================================================"
-  run %{brew install zsh ctags git hub tmux reattach-to-user-namespace the_silver_searcher}
-  run %{brew install macvim --custom-icons --override-system-vim --with-lua --with-luajit}
+  run %{brew install ctags git hub tmux reattach-to-user-namespace the_silver_searcher}
   puts
   puts
 end
@@ -250,41 +238,6 @@ def ask(message, values)
   values[selection]
 end
 
-def install_prezto
-  puts
-  puts "Installing Prezto (ZSH Enhancements)..."
-
-  run %{ ln -nfs "$HOME/.yadr/zsh/prezto" "${ZDOTDIR:-$HOME}/.zprezto" }
-
-  # The prezto runcoms are only going to be installed if zprezto has never been installed
-  file_operation(Dir.glob('zsh/prezto/runcoms/z*'), :copy)
-
-  puts
-  puts "Overriding prezto ~/.zpreztorc with YADR's zpreztorc to enable additional modules..."
-  run %{ ln -nfs "$HOME/.yadr/zsh/prezto-override/zpreztorc" "${ZDOTDIR:-$HOME}/.zpreztorc" }
-
-  puts
-  puts "Creating directories for your customizations"
-  run %{ mkdir -p $HOME/.zsh.before }
-  run %{ mkdir -p $HOME/.zsh.after }
-  run %{ mkdir -p $HOME/.zsh.prompts }
-
-  if ENV["SHELL"].include? 'zsh' then
-    puts "Zsh is already configured as your shell of choice. Restart your session to load the new settings"
-  else
-    puts "Setting zsh as your default shell"
-    if File.exists?("/usr/local/bin/zsh")
-      if File.readlines("/private/etc/shells").grep("/usr/local/bin/zsh").empty?
-        puts "Adding zsh to standard shell list"
-        run %{ echo "/usr/local/bin/zsh" | sudo tee -a /private/etc/shells }
-      end
-      run %{ chsh -s /usr/local/bin/zsh }
-    else
-      run %{ chsh -s /bin/zsh }
-    end
-  end
-end
-
 def want_to_install? (section)
   if ENV["ASK"]=="true"
     puts "Would you like to install configuration files for: #{section}? [y]es, [n]o"
@@ -313,15 +266,6 @@ def file_operation(files, method = :symlink)
       run %{ ln -nfs "#{source}" "#{target}" }
     else
       run %{ cp -f "#{source}" "#{target}" }
-    end
-
-    # Temporary solution until we find a way to allow customization
-    # This modifies zshrc to load all of yadr's zsh extensions.
-    # Eventually yadr's zsh extensions should be ported to prezto modules.
-    if file == 'zshrc'
-      File.open(target, 'a') do |zshrc|
-        zshrc.puts('for config_file ($HOME/.yadr/zsh/*.zsh) source $config_file')
-      end
     end
 
     puts "=========================================================="
