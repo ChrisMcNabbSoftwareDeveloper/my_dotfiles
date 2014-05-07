@@ -9,7 +9,7 @@
     # zsh and anything else having to do with zsh has been removed.
     # there are other mods, as well. 
 
-    sh -c "`curl -fsSL https://raw.github.com/ChrisMcNabbSoftwareDeveloper/dotfiles/master/install.sh`"
+    sh -c "`curl -fsSL https://raw.github.com/ChrisMcNabbSoftwareDeveloper/my_dotfiles/master/install.sh`"
 
 **Always be sure to run `rake update` after pulling to ensure plugins are updated**
 
